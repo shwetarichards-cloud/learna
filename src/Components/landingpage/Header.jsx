@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaUser } from "react-icons/fa";
 import { FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 
@@ -6,6 +6,36 @@ import { FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 const Header = () => {
   const [openDropdown, setOpenDropdown] = useState(false); // For "Courses"
   const [openLang, setOpenLang] = useState(false); // For "Language"
+  const dropdownRef = useRef(null);
+  const langDropdownRef = useRef(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenDropdown(false);
+      }
+      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
+        setOpenLang(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Close other dropdown when one opens
+  const handleCoursesClick = () => {
+    setOpenLang(false);
+    setOpenDropdown(!openDropdown);
+  };
+
+  const handleLangClick = () => {
+    setOpenDropdown(false);
+    setOpenLang(!openLang);
+  };
 
   return (
     <>
@@ -24,20 +54,20 @@ const Header = () => {
   </a>
         <div className="flex items-center space-x-6">
           {/* 🌐 Language Dropdown */}
-          <div className="relative">
+          <div className="relative" ref={langDropdownRef}>
             <button
-              onClick={() => setOpenLang(!openLang)}
-              className="hidden md:inline-flex items-center gap-2 text-white px-5 py-2 rounded-md transition"
+              onClick={handleLangClick}
+              className="hidden md:inline-flex items-center gap-2 text-white px-3 py-2 rounded-md transition-all duration-200 hover:bg-sky-900"
             >
               {/* Circle Flag */}
               <img
                 src="https://flagcdn.com/w20/gb.png"
                 alt="English Flag"
-                className="w-5 h-5 rounded-full border"
+                className="w-5 h-5 rounded-full border border-gray-300"
               />
               English
               <svg
-                className="w-4 h-4 ml-1"
+                className={`w-4 h-4 ml-1 transition-transform duration-200 ${openLang ? 'rotate-180' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -51,22 +81,24 @@ const Header = () => {
               </svg>
             </button>
 
-            {openLang && (
-              <div className="absolute right-0 mt-2 w-40 bg-white text-gray-800 rounded-md shadow-lg py-2 z-50">
-                <a href="#" className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50 transition">
-                  <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-5 h-5 rounded-full border" />
-                  English
-                </a>
-                <a href="#" className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50 transition">
-                  <img src="https://flagcdn.com/w20/es.png" alt="Spanish" className="w-5 h-5 rounded-full border" />
-                  Spanish
-                </a>
-                <a href="#" className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50 transition">
-                  <img src="https://flagcdn.com/w20/sa.png" alt="Arabic" className="w-5 h-5 rounded-full border" />
-                  Arabic
-                </a>
-              </div>
-            )}
+            <div className={`absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-xl border border-gray-100 py-2 z-[9999] transition-all duration-300 ease-in-out ${
+              openLang 
+                ? 'opacity-100 visible transform translate-y-0' 
+                : 'opacity-0 invisible transform -translate-y-2'
+            }`}>
+              <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors duration-200 border-b border-gray-100 last:border-b-0">
+                <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-5 h-5 rounded-full border border-gray-300" />
+                <span className="font-medium">English</span>
+              </a>
+              <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors duration-200 border-b border-gray-100 last:border-b-0">
+                <img src="https://flagcdn.com/w20/es.png" alt="Spanish" className="w-5 h-5 rounded-full border border-gray-300" />
+                <span className="font-medium">Spanish</span>
+              </a>
+              <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors duration-200 border-b border-gray-100 last:border-b-0">
+                <img src="https://flagcdn.com/w20/sa.png" alt="Arabic" className="w-5 h-5 rounded-full border border-gray-300" />
+                <span className="font-medium">Arabic</span>
+              </a>
+            </div>
           </div>
 
           {/* Divider line */}
@@ -84,7 +116,7 @@ const Header = () => {
       </div>
 
       {/* 🔹 Main Navbar */}
-      <header className="bg-white shadow-md sticky top-0 z-50">
+      <header className="bg-white shadow-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-20">
           {/* Left: Logo + Search */}
           <div className="flex items-center space-x-4 w-1/3">
@@ -119,13 +151,17 @@ const Header = () => {
             {/* Dropdown */}
             <div
               className="relative"
+              ref={dropdownRef}
               onMouseEnter={() => setOpenDropdown(true)}
               onMouseLeave={() => setOpenDropdown(false)}
             >
-              <button className="hover:text-blue-600 flex items-center">
+              <button 
+                onClick={handleCoursesClick}
+                className="hover:text-blue-600 flex items-center transition-colors duration-200"
+              >
                 Courses
                 <svg
-                  className="w-4 h-4 ml-1"
+                  className={`w-4 h-4 ml-1 transition-transform duration-200 ${openDropdown ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -134,13 +170,24 @@ const Header = () => {
                 </svg>
               </button>
 
-              {openDropdown && (
-                <div className="absolute top-10 left-0 bg-white shadow-lg rounded-md py-2 w-44">
-                  <a href="#" className="block px-4 py-2 hover:bg-blue-50 text-gray-700">Web Development</a>
-                  <a href="#" className="block px-4 py-2 hover:bg-blue-50 text-gray-700">Data Science</a>
-                  <a href="#" className="block px-4 py-2 hover:bg-blue-50 text-gray-700">Design</a>
-                </div>
-              )}
+              <div className={`absolute top-12 left-1/2 transform -translate-x-1/2 bg-white shadow-xl rounded-lg border border-gray-100 py-2 w-56 z-[9999] transition-all duration-300 ease-in-out ${
+                openDropdown 
+                  ? 'opacity-100 visible transform -translate-x-1/2 translate-y-0' 
+                  : 'opacity-0 invisible transform -translate-x-1/2 -translate-y-2'
+              }`}>
+                <a href="#" className="block px-4 py-3 hover:bg-blue-50 text-gray-700 transition-colors duration-200 border-b border-gray-100 last:border-b-0 font-medium">
+                  <span className="text-blue-600">💻</span> Web Development
+                </a>
+                <a href="#" className="block px-4 py-3 hover:bg-blue-50 text-gray-700 transition-colors duration-200 border-b border-gray-100 last:border-b-0 font-medium">
+                  <span className="text-green-600">📊</span> Data Science
+                </a>
+                <a href="#" className="block px-4 py-3 hover:bg-blue-50 text-gray-700 transition-colors duration-200 border-b border-gray-100 last:border-b-0 font-medium">
+                  <span className="text-purple-600">🎨</span> Design
+                </a>
+                <a href="#" className="block px-4 py-3 hover:bg-blue-50 text-gray-700 transition-colors duration-200 border-b border-gray-100 last:border-b-0 font-medium">
+                  <span className="text-orange-600">📱</span> Mobile Development
+                </a>
+              </div>
             </div>
 
             <a href="#" className="hover:text-blue-600">Pages</a>
